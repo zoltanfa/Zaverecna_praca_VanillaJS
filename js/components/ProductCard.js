@@ -1,6 +1,5 @@
 // ProductCard Component
 import { cartStore } from '../stores/cartStore.js';
-import { router } from '../router.js';
 
 export function createProductCard(product) {
   const card = document.createElement('div');
@@ -13,12 +12,12 @@ export function createProductCard(product) {
     </a>
     <div class="product-footer">
       <p class="product-price">${product.price} €</p>
-      <button class="add-to-cart-btn">🛒 Add to Cart</button>
+      <button class="add-to-cart-btn-card">🛒 Add to Cart</button>
     </div>
   `;
   
   // Add event listener for add to cart button
-  const addButton = card.querySelector('.add-to-cart-btn');
+  const addButton = card.querySelector('.add-to-cart-btn-card');
   addButton.addEventListener('click', () => {
     cartStore.addToCart(product);
   });

@@ -22,14 +22,14 @@ export function renderProductDetail(route) {
         <h1 class="product-detail-title">${product.name}</h1>
         <p class="product-detail-price">${product.price} €</p>
         <p class="product-detail-description">${product.description}</p>
-        <button class="add-to-cart-btn">🛒 Add to Cart</button>
+        <button class="add-to-cart-btn-detail">🛒 Add to Cart</button>
         <button class="category-btn">Show ${product.category} Products</button>
       </div>
     </div>
   `;
   
   // Add to cart button
-  const addButton = main.querySelector('.add-to-cart-btn');
+  const addButton = main.querySelector('.add-to-cart-btn-detail');
   addButton.addEventListener('click', () => {
     cartStore.addToCart(product);
   });
