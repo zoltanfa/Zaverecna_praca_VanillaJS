@@ -1,4 +1,3 @@
-// Header Component
 import { cartStore } from '../stores/cartStore.js';
 import { searchStore } from '../stores/searchStore.js';
 import { router } from '../router.js';
@@ -43,15 +42,12 @@ export function createHeader() {
     </div>
   `;
   
-  // Initialize cart count
   updateCartCount();
   
-  // Subscribe to cart changes
   cartStore.subscribe(() => {
     updateCartCount();
   });
   
-  // Handle search input
   const searchInput = header.querySelector('.search-input');
   searchInput.addEventListener('input', (e) => {
     searchStore.setSearchTerm(e.target.value);

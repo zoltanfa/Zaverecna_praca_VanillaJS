@@ -1,15 +1,14 @@
-// Cart View
 import { cartStore } from '../stores/cartStore.js';
 
 export function renderCart() {
   const main = document.createElement('main');
-  main.className = 'main';
+  main.className = 'main-cart';
   
   const render = () => {
     const cart = cartStore.getCart();
     
     main.innerHTML = `
-      <h1 class="main-title">Shopping Cart</h1>
+      <h1 class="main-title-cart">Shopping Cart</h1>
       ${cart.length === 0 ? `
         <div class="empty-cart">
           <p>Your cart is empty.</p>
@@ -47,7 +46,7 @@ export function renderCart() {
           <img src="${item.image}" alt="${item.name}" class="cart-item-image" />
           <div class="cart-item-details">
             <h3 class="cart-item-title">${item.name}</h3>
-            <p class="cart-item-price">${item.price} €</p>
+            <p class="cart-item-price">${item.price.toFixed(2)} €</p>
           </div>
           <div class="cart-item-controls">
             <div class="quantity-controls">
@@ -60,7 +59,6 @@ export function renderCart() {
           </div>
         `;
         
-        // Quantity controls
         const minusBtn = cartItem.querySelector('.minus-btn');
         const plusBtn = cartItem.querySelector('.plus-btn');
         const removeBtn = cartItem.querySelector('.remove-btn');
@@ -80,19 +78,15 @@ export function renderCart() {
         cartItems.appendChild(cartItem);
       });
       
-      // Clear cart button
       const clearBtn = main.querySelector('.clear-cart-btn');
       clearBtn.addEventListener('click', () => {
-        if (confirm('Are you sure you want to clear your cart?')) {
-          cartStore.clearCart();
-        }
+        cartStore.clearCart();
       });
     }
   };
   
   render();
   
-  // Re-render when cart changes
   cartStore.subscribe(() => render());
   
   return main;

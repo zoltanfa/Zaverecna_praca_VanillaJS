@@ -1,4 +1,3 @@
-// Main entry point for the application
 import { router } from './router.js';
 import { createHeader } from './components/Header.js';
 import { createFooter } from './components/Footer.js';
@@ -9,26 +8,20 @@ import { renderCart } from './views/Cart.js';
 import { renderCheckout } from './views/Checkout.js';
 import { renderOrderHistory } from './views/OrderHistory.js';
 
-// Get the app container
 const appContainer = document.getElementById('app');
 
-// Create persistent header and footer
 const header = createHeader();
 const footer = createFooter();
 
-// Create content container
 const contentContainer = document.createElement('div');
 contentContainer.className = 'content';
 
-// Append to app
 appContainer.appendChild(header);
 appContainer.appendChild(contentContainer);
 appContainer.appendChild(footer);
 
-// Add app class to container
 appContainer.className = 'app';
 
-// Register routes
 router.addRoute('/', (route) => {
   contentContainer.innerHTML = '';
   contentContainer.appendChild(renderHome(route));
@@ -59,5 +52,4 @@ router.addRoute('/orders', (route) => {
   contentContainer.appendChild(renderOrderHistory(route));
 });
 
-// Initialize router (will handle the initial route)
 router.handleRoute();

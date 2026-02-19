@@ -1,11 +1,10 @@
-// Home View
 import { products } from '../data/products.js';
 import { createProductCard } from '../components/ProductCard.js';
 import { searchStore } from '../stores/searchStore.js';
 
 export function renderHome() {
   const main = document.createElement('main');
-  main.className = 'main';
+  main.className = 'main-home';
   
   const render = () => {
     const searchTerm = searchStore.getSearchTerm().toLowerCase();
@@ -18,7 +17,7 @@ export function renderHome() {
     }
     
     main.innerHTML = `
-      <h1 class="main-title">Welcome to PC Component Shop</h1>
+      <h1 class="main-title-home">Welcome to PC Component Shop</h1>
       <p class="main-description">Find the best PC components for your build.</p>
       <section class="featured-section">
         <h2 class="section-title">Featured Products</h2>
@@ -34,7 +33,6 @@ export function renderHome() {
   
   render();
   
-  // Re-render when search changes
   searchStore.subscribe(() => render());
   
   return main;

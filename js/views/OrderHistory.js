@@ -1,4 +1,3 @@
-// OrderHistory View
 const ORDER_STORAGE_KEY = 'orderHistory';
 
 function loadOrders() {
@@ -32,13 +31,13 @@ function formatOrderDate(value) {
 
 export function renderOrderHistory() {
   const main = document.createElement('main');
-  main.className = 'main';
+  main.className = 'main-order-history';
   
   const orders = loadOrders();
   
   if (orders.length === 0) {
     main.innerHTML = `
-      <h1 class="main-title">Order History</h1>
+      <h1 class="main-title-order-history">Order History</h1>
       <div class="empty-state">
         <p>You have no previous orders.</p>
         <a href="#/products" class="shop-link" data-link>Start Shopping</a>
@@ -46,7 +45,7 @@ export function renderOrderHistory() {
     `;
   } else {
     main.innerHTML = `
-      <h1 class="main-title">Order History</h1>
+      <h1 class="main-title-order-history">Order History</h1>
       <div class="orders-list"></div>
     `;
     

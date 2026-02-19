@@ -1,4 +1,3 @@
-// Checkout View
 import { cartStore } from '../stores/cartStore.js';
 import { router } from '../router.js';
 
@@ -24,7 +23,7 @@ function saveOrders(orders) {
 
 export function renderCheckout() {
   const main = document.createElement('main');
-  main.className = 'main';
+  main.className = 'main-checkout';
   
   let isSubmitted = false;
   let isProcessing = false;
@@ -47,7 +46,7 @@ export function renderCheckout() {
   const render = () => {
     if (isSubmitted) {
       main.innerHTML = `
-        <h1 class="main-title">Checkout</h1>
+        <h1 class="main-title-checkout">Checkout</h1>
         <div class="success-message">
           <h2>Order Placed Successfully!</h2>
           <p>Thank you for your purchase. Redirecting to home page...</p>
@@ -57,7 +56,7 @@ export function renderCheckout() {
     }
     
     main.innerHTML = `
-      <h1 class="main-title">Checkout</h1>
+      <h1 class="main-title-checkout">Checkout</h1>
       <div class="checkout-container">
         <form class="checkout-form">
           <section class="form-section">
@@ -116,8 +115,8 @@ export function renderCheckout() {
                 <input id="cardNumber" type="text" required ${isProcessing ? 'disabled' : ''} />
               </div>
               <div class="form-group">
-                <label for="expiryDate">Expiry Date *</label>
-                <input id="expiryDate" type="text" placeholder="MM/YY" required ${isProcessing ? 'disabled' : ''} />
+                <label for="expiryDate">Expiry Date (MM/YY) *</label>
+                <input id="expiryDate" type="text" required ${isProcessing ? 'disabled' : ''} />
               </div>
               <div class="form-group">
                 <label for="cvv">CVV *</label>
@@ -126,23 +125,38 @@ export function renderCheckout() {
             </div>
           </section>
 
+          <section class="form-section">
+            <h2>Order Summary</h2>
+            <div class="order-summary">
+              ${cartStore.getCart().length === 0 ? `
+                <div class="empty-cart-message">
+                  <p>Your cart is empty. <a href="#/products">Continue shopping</a></p>
+                </div>
+              ` : `
+                ${cartStore.getCart().map(item => `
+                  <div class="summary-item">
+                    <span>${item.name} x ${item.quantity}</span>
+                    <span>${(item.price * item.quantity).toFixed(2)} €</span>
+                  </div>
+                `).join('')}
+                <div class="summary-total">
+                  <strong>Total:</strong>
+                  <strong>${cartStore.totalPrice.toFixed(2)} €</strong>
+                </div>
+              `}
+            </div>
+          </section>
+
           <div class="form-actions">
-            <button type="button" class="back-btn" ${isProcessing ? 'disabled' : ''}>Back to Cart</button>
-            <button type="submit" class="submit-btn" ${isProcessing ? 'disabled' : ''}>
+            <button type="button" class="cancel-btn" ${isProcessing ? 'disabled' : ''}>Back to Cart</button>
+            <button type="submit" class="submit-btn" ${isProcessing || cartStore.getCart().length === 0 ? 'disabled' : ''}>
               ${isProcessing ? 'Processing...' : 'Place Order'}
             </button>
-          </div>
-
-          <div class="order-summary">
-            <h3>Order Summary</h3>
-            <p>Total Items: ${cartStore.totalItems}</p>
-            <p>Total Price: ${cartStore.totalPrice.toFixed(2)} €</p>
           </div>
         </form>
       </div>
     `;
     
-    // Set form values
     Object.keys(formData).forEach(key => {
       const input = main.querySelector(`#${key}`);
       if (input) {
@@ -153,7 +167,6 @@ export function renderCheckout() {
       }
     });
     
-    // Handle form submission
     const form = main.querySelector('.checkout-form');
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -165,10 +178,8 @@ export function renderCheckout() {
       isProcessing = true;
       render();
       
-      // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 2000));
       
-      // Save order
       const orders = loadOrders();
       const order = {
         id: Date.now(),
@@ -198,8 +209,7 @@ export function renderCheckout() {
       }, 2000);
     });
     
-    // Back button
-    const backBtn = main.querySelector('.back-btn');
+    const backBtn = main.querySelector('.cancel-btn');
     backBtn.addEventListener('click', () => {
       router.navigateTo('/cart');
     });

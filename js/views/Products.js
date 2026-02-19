@@ -1,11 +1,10 @@
-// Products View
 import { products } from '../data/products.js';
 import { createProductCard } from '../components/ProductCard.js';
 import { searchStore } from '../stores/searchStore.js';
 
 export function renderProducts(route) {
   const main = document.createElement('main');
-  main.className = 'main';
+  main.className = 'main-products';
   
   const availableCategories = [
     'CPU',
@@ -19,7 +18,6 @@ export function renderProducts(route) {
   
   let selectedCategories = [];
   
-  // Check if category was passed in query
   if (route.query.category) {
     selectedCategories = [route.query.category];
   }
@@ -39,7 +37,7 @@ export function renderProducts(route) {
     }
     
     main.innerHTML = `
-      <h1 class="main-title">All Products</h1>
+      <h1 class="main-title-products">All Products</h1>
       <div class="content">
         <aside class="filters">
           <h2 class="filters-title">Filter by Category</h2>
@@ -51,7 +49,6 @@ export function renderProducts(route) {
       </div>
     `;
     
-    // Render category filters
     const filterOptions = main.querySelector('.filter-options');
     availableCategories.forEach(category => {
       const label = document.createElement('label');
@@ -76,7 +73,6 @@ export function renderProducts(route) {
       filterOptions.appendChild(label);
     });
     
-    // Render products
     const grid = main.querySelector('.product-grid');
     filtered.forEach(product => {
       grid.appendChild(createProductCard(product));
@@ -85,7 +81,6 @@ export function renderProducts(route) {
   
   render();
   
-  // Re-render when search changes
   searchStore.subscribe(() => render());
   
   return main;
