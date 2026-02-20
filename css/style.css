@@ -194,14 +194,14 @@ nav {
 .main-title-home,
 .main-title-products,
 .main-title-product-detail,
-.main-title-cart,
-.main-title-order-history {
+.main-title-cart {
   font-size: 30px;
   font-weight: bold;
   margin-bottom: 16px;
 }
 
-.main-title-checkout {
+.main-title-checkout,
+.main-title-order-history {
   font-size: 30px;
   font-weight: bold;
   margin-bottom: 24px;
@@ -838,7 +838,7 @@ nav {
   .main-home,
   .main-products,
   .main-checkout,
-  .main-order-history {
+  .main-order-history{
     padding: 12px;
   }
 
