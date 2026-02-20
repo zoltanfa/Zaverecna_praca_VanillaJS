@@ -112,15 +112,15 @@ export function renderCheckout() {
               </div>
               <div class="form-group full-width">
                 <label for="cardNumber">Card Number *</label>
-                <input id="cardNumber" type="text" required ${isProcessing ? 'disabled' : ''} />
+                <input id="cardNumber" type="text" maxlength="16" required ${isProcessing ? 'disabled' : ''} />
               </div>
               <div class="form-group">
                 <label for="expiryDate">Expiry Date (MM/YY) *</label>
-                <input id="expiryDate" type="text" required ${isProcessing ? 'disabled' : ''} />
+                <input id="expiryDate" type="text" maxlength="5" required ${isProcessing ? 'disabled' : ''} />
               </div>
               <div class="form-group">
                 <label for="cvv">CVV *</label>
-                <input id="cvv" type="text" required ${isProcessing ? 'disabled' : ''} />
+                <input id="cvv" type="text" maxlength="3" required ${isProcessing ? 'disabled' : ''} />
               </div>
             </div>
           </section>
