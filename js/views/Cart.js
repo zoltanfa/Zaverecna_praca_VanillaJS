@@ -3,9 +3,32 @@ import { cartStore } from '../stores/cartStore.js';
 export function renderCart() {
   const main = document.createElement('main');
   main.className = 'main-cart';
+
+  const getStockLabel = (item) => {
+    if (!cartStore.isProductAvailable(item)) {
+      return 'Out of stock';
+    }
+
+    const availableUnits = cartStore.getAvailableUnits(item);
+    if (!Number.isFinite(availableUnits)) {
+      return 'In stock';
+    }
+
+    return `${availableUnits} in stock`;
+  };
+
+  const isAtStockLimit = (item) => {
+    const availableUnits = cartStore.getAvailableUnits(item);
+    if (!Number.isFinite(availableUnits)) {
+      return false;
+    }
+
+    return item.quantity >= availableUnits;
+  };
   
   const render = () => {
     const cart = cartStore.getCart();
+    const hasUnavailableItems = cart.some((item) => !cartStore.isProductAvailable(item));
     
     main.innerHTML = `
       <h1 class="main-title-cart">Shopping Cart</h1>
@@ -28,8 +51,9 @@ export function renderCart() {
             </div>
             <div class="cart-actions">
               <button class="clear-cart-btn">Clear Cart</button>
-              <a href="#/checkout" class="checkout-btn" data-link>Proceed to Checkout</a>
+              <a href="${hasUnavailableItems ? '#/cart' : '#/checkout'}" class="checkout-btn ${hasUnavailableItems ? 'disabled' : ''}" data-link>Proceed to Checkout</a>
             </div>
+            ${hasUnavailableItems ? '<p class="checkout-warning">Some items are out of stock. Remove them before checkout.</p>' : ''}
           </div>
         </div>
       `}
@@ -47,12 +71,13 @@ export function renderCart() {
           <div class="cart-item-details">
             <h3 class="cart-item-title">${item.name}</h3>
             <p class="cart-item-price">${item.price.toFixed(2)} €</p>
+            <p class="stock-info ${cartStore.isProductAvailable(item) ? '' : 'out-of-stock'}">${getStockLabel(item)}</p>
           </div>
           <div class="cart-item-controls">
             <div class="quantity-controls">
               <button class="quantity-btn minus-btn">-</button>
               <span class="quantity">${item.quantity}</span>
-              <button class="quantity-btn plus-btn">+</button>
+              <button class="quantity-btn plus-btn" ${!cartStore.isProductAvailable(item) || isAtStockLimit(item) ? 'disabled' : ''}>+</button>
             </div>
             <p class="item-total">${(item.price * item.quantity).toFixed(2)} €</p>
             <button class="remove-btn">Remove</button>

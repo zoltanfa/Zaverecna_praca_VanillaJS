@@ -14,6 +14,8 @@ export function renderProductDetail(route) {
     return main;
   }
   
+  const isAvailable = cartStore.isProductAvailable(product);
+
   main.innerHTML = `
     <div class="product-detail">
       <img src="${product.image}" alt="${product.name}" class="product-detail-image" />
@@ -21,7 +23,7 @@ export function renderProductDetail(route) {
         <h1 class="product-detail-title">${product.name}</h1>
         <p class="product-detail-price">${product.price.toFixed(2)} €</p>
         <p class="product-detail-description">${product.description}</p>
-        <button class="add-to-cart-btn-detail">🛒 Add to Cart</button>
+        <button class="add-to-cart-btn-detail" ${isAvailable ? '' : 'disabled'}>${isAvailable ? 'Add to Cart' : 'Out of Stock'}</button>
         <button class="category-btn">Show ${product.category} Products</button>
       </div>
     </div>

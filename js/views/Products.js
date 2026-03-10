@@ -1,20 +1,10 @@
-import { products } from '../data/products.js';
+import { products, subscribeProducts } from '../data/products.js';
 import { createProductCard } from '../components/ProductCard.js';
 import { searchStore } from '../stores/searchStore.js';
 
 export function renderProducts(route) {
   const main = document.createElement('main');
   main.className = 'main-products';
-  
-  const availableCategories = [
-    'CPU',
-    'GPU', 
-    'Motherboard',
-    'RAM',
-    'Storage',
-    'PSU',
-    'Case'
-  ];
   
   let selectedCategories = [];
   
@@ -23,6 +13,7 @@ export function renderProducts(route) {
   }
   
   const render = () => {
+    const availableCategories = [...new Set(products.map((product) => product.category).filter(Boolean))].sort((a, b) => a.localeCompare(b));
     const searchTerm = searchStore.getSearchTerm().toLowerCase();
     let filtered = products;
     
@@ -31,9 +22,14 @@ export function renderProducts(route) {
     }
     
     if (searchTerm) {
-      filtered = filtered.filter(product => 
-        product.name.toLowerCase().includes(searchTerm)
-      );
+      filtered = filtered
+        .map((product) => ({
+          product,
+          score: searchStore.getSearchScore(product, searchTerm)
+        }))
+        .filter((entry) => entry.score > 0)
+        .sort((a, b) => b.score - a.score)
+        .map((entry) => entry.product);
     }
     
     main.innerHTML = `
@@ -82,6 +78,7 @@ export function renderProducts(route) {
   render();
   
   searchStore.subscribe(() => render());
+  subscribeProducts(() => render());
   
   return main;
 }

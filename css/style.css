@@ -60,6 +60,65 @@ nav {
   font-size: 16px;
 }
 
+.account-menu {
+  position: relative;
+  display: inline-block;
+}
+
+.account-btn {
+  border: none;
+  background-color: transparent;
+  color: white;
+  border-radius: 6px;
+  min-height: auto;
+  padding: 6px 10px;
+  font-size: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  line-height: 1;
+  transition: background-color 0.2s;
+}
+
+.account-btn:hover {
+  background-color: rgba(255, 255, 255, 0.12);
+}
+
+.account-dropdown {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  min-width: 130px;
+  background-color: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  z-index: 10;
+}
+
+.account-link {
+  display: block;
+  width: 100%;
+  border: none;
+  background-color: white;
+  text-align: left;
+  padding: 10px 12px;
+  color: #1f2937;
+  text-decoration: none;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.account-link:hover {
+  background-color: #f3f4f6;
+}
+
+.account-action {
+  font-family: inherit;
+}
+
 .search-container {
   flex: 1;
   max-width: 400px;
@@ -137,6 +196,17 @@ nav {
   color: #16a34a;
 }
 
+.stock-status {
+  margin: 0 0 8px 0;
+  color: #15803d;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.stock-status.out-of-stock {
+  color: #dc2626;
+}
+
 .product-link {
   display: block;
   color: inherit;
@@ -168,6 +238,11 @@ nav {
 
 .add-to-cart-btn-card:active {
   background-color: #afb0b3;
+}
+
+.add-to-cart-btn-card:disabled {
+  background-color: #9ca3af;
+  cursor: not-allowed;
 }
 
 /* View Main Styles */

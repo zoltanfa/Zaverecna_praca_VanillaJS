@@ -1,3 +1,5 @@
+import { products } from '../data/products.js';
+
 class CartStore {
   constructor() {
     this.STORAGE_KEY = 'cart';
@@ -32,10 +34,44 @@ class CartStore {
     this.listeners.forEach(listener => listener(this.cart));
   }
 
+  getLiveProductById(productId) {
+    return products.find((product) => String(product.id) === String(productId)) || null;
+  }
+
+  getAvailableUnits(product) {
+    const liveProduct = this.getLiveProductById(product?.id);
+    const sourceProduct = liveProduct || product;
+
+    if (typeof sourceProduct?.stock === 'number') {
+      return Math.max(0, sourceProduct.stock);
+    }
+
+    if (typeof sourceProduct?.inStock === 'boolean') {
+      return sourceProduct.inStock ? Number.POSITIVE_INFINITY : 0;
+    }
+
+    return Number.POSITIVE_INFINITY;
+  }
+
+  isProductAvailable(product) {
+    return this.getAvailableUnits(product) > 0;
+  }
+
   addToCart(product) {
+    if (!product || !this.isProductAvailable(product)) {
+      return false;
+    }
+
     const existingItemIndex = this.cart.findIndex(item => item.id === product.id);
     
     if (existingItemIndex > -1) {
+      const currentQuantity = this.cart[existingItemIndex].quantity;
+      const maxAvailableUnits = this.getAvailableUnits(product);
+
+      if (currentQuantity >= maxAvailableUnits) {
+        return false;
+      }
+
       this.cart[existingItemIndex].quantity += 1;
     } else {
       this.cart.push({
@@ -46,6 +82,7 @@ class CartStore {
     
     this.saveToStorage();
     this.notify();
+    return true;
   }
 
   removeFromCart(productId) {
@@ -62,7 +99,15 @@ class CartStore {
     
     const item = this.cart.find(item => item.id === productId);
     if (item) {
-      item.quantity = quantity;
+      const maxAvailableUnits = this.getAvailableUnits(item);
+      const nextQuantity = Math.min(quantity, maxAvailableUnits);
+
+      if (nextQuantity <= 0) {
+        this.removeFromCart(productId);
+        return;
+      }
+
+      item.quantity = nextQuantity;
       this.saveToStorage();
       this.notify();
     }

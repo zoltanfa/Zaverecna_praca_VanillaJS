@@ -1,4 +1,4 @@
-import { products } from '../data/products.js';
+import { products, subscribeProducts } from '../data/products.js';
 import { createProductCard } from '../components/ProductCard.js';
 import { searchStore } from '../stores/searchStore.js';
 
@@ -11,9 +11,14 @@ export function renderHome() {
     let featuredProducts = products.filter(product => [1, 2, 6, 11, 16, 21].includes(product.id));
     
     if (searchTerm) {
-      featuredProducts = featuredProducts.filter(product => 
-        product.name.toLowerCase().includes(searchTerm)
-      );
+      featuredProducts = featuredProducts
+        .map((product) => ({
+          product,
+          score: searchStore.getSearchScore(product, searchTerm)
+        }))
+        .filter((entry) => entry.score > 0)
+        .sort((a, b) => b.score - a.score)
+        .map((entry) => entry.product);
     }
     
     main.innerHTML = `
@@ -34,6 +39,7 @@ export function renderHome() {
   render();
   
   searchStore.subscribe(() => render());
+  subscribeProducts(() => render());
   
   return main;
 }

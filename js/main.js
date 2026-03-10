@@ -7,6 +7,12 @@ import { renderProductDetail } from './views/ProductDetail.js';
 import { renderCart } from './views/Cart.js';
 import { renderCheckout } from './views/Checkout.js';
 import { renderOrderHistory } from './views/OrderHistory.js';
+import { renderLogin } from './views/Login.js';
+import { renderRegister } from './views/Register.js';
+import { renderProfile } from './views/Profile.js';
+import { renderAdmin } from './views/Admin.js';
+import { authStore } from './stores/authStore.js';
+import { loadProductsFromDatabase } from './data/products.js';
 
 const appContainer = document.getElementById('app');
 
@@ -45,11 +51,51 @@ router.addRoute('/cart', (route) => {
 router.addRoute('/checkout', (route) => {
   contentContainer.innerHTML = '';
   contentContainer.appendChild(renderCheckout(route));
-});
+}, { requiresAuth: true });
 
 router.addRoute('/orders', (route) => {
   contentContainer.innerHTML = '';
   contentContainer.appendChild(renderOrderHistory(route));
+}, { requiresAuth: true });
+
+router.addRoute('/login', () => {
+  contentContainer.innerHTML = '';
+  contentContainer.appendChild(renderLogin());
 });
 
+router.addRoute('/register', () => {
+  contentContainer.innerHTML = '';
+  contentContainer.appendChild(renderRegister());
+});
+
+router.addRoute('/profile', () => {
+  contentContainer.innerHTML = '';
+  contentContainer.appendChild(renderProfile());
+}, { requiresAuth: true });
+
+router.addRoute('/admin', () => {
+  contentContainer.innerHTML = '';
+  contentContainer.appendChild(renderAdmin());
+}, { requiresAuth: true, requiresRole: 'admin' });
+
+router.addBeforeEach(async (to) => {
+  await authStore.waitForAuthInit();
+
+  if (to.meta.requiresAuth && !authStore.currentUser) {
+    return '/login';
+  }
+
+  if ((to.path === '/login' || to.path === '/register') && authStore.currentUser) {
+    return '/';
+  }
+
+  if (to.meta.requiresRole === 'admin' && !authStore.isAdmin) {
+    return '/';
+  }
+
+  return true;
+});
+
+authStore.initAuth();
+loadProductsFromDatabase();
 router.handleRoute();

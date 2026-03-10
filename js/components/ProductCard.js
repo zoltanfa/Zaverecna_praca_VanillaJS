@@ -3,6 +3,8 @@ import { cartStore } from '../stores/cartStore.js';
 export function createProductCard(product) {
   const card = document.createElement('div');
   card.className = 'product-card';
+  const isAvailable = cartStore.isProductAvailable(product);
+  const stockLabel = isAvailable ? 'In stock' : 'Out of stock';
   
   card.innerHTML = `
     <a href="#/product/${product.id}" class="product-link" data-link>
@@ -11,7 +13,8 @@ export function createProductCard(product) {
     </a>
     <div class="product-footer">
       <p class="product-price">${product.price.toFixed(2)} €</p>
-      <button class="add-to-cart-btn-card">🛒 Add to Cart</button>
+      <p class="stock-status ${isAvailable ? '' : 'out-of-stock'}">${stockLabel}</p>
+      <button class="add-to-cart-btn-card" ${isAvailable ? '' : 'disabled'}>${isAvailable ? '🛒 Add to Cart' : 'Unavailable'}</button>
     </div>
   `;
   

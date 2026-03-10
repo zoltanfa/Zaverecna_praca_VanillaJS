@@ -1,6 +1,8 @@
 class Router {
   constructor() {
     this.routes = {};
+    this.routeMeta = {};
+    this.beforeEachHooks = [];
     this.currentRoute = null;
     
     window.addEventListener('hashchange', () => this.handleRoute());
@@ -15,11 +17,16 @@ class Router {
     });
   }
 
-  addRoute(path, handler) {
+  addRoute(path, handler, meta = {}) {
     this.routes[path] = handler;
+    this.routeMeta[path] = meta;
   }
 
-  handleRoute() {
+  addBeforeEach(hook) {
+    this.beforeEachHooks.push(hook);
+  }
+
+  async handleRoute() {
     const hash = window.location.hash.slice(1) || '/';
     const [path, queryString] = hash.split('?');
     
@@ -48,16 +55,51 @@ class Router {
       }
     }
 
+    let resolvedRoute = null;
+    let routeKey = '';
+
     if (matchedRoute) {
-      this.currentRoute = path;
-      this.routes[matchedRoute]({ params: routeParams, query: params });
+      routeKey = matchedRoute;
+      resolvedRoute = {
+        path,
+        routePath: matchedRoute,
+        params: routeParams,
+        query: params,
+        meta: this.routeMeta[matchedRoute] || {}
+      };
     } else if (this.routes[path]) {
-      this.currentRoute = path;
-      this.routes[path]({ params: routeParams, query: params });
-    } else {
+      routeKey = path;
+      resolvedRoute = {
+        path,
+        routePath: path,
+        params: routeParams,
+        query: params,
+        meta: this.routeMeta[path] || {}
+      };
+    }
+
+    if (!resolvedRoute) {
       console.warn('No route found for:', path);
       this.navigateTo('/');
+      return;
     }
+
+    for (const hook of this.beforeEachHooks) {
+      const hookResult = await hook(resolvedRoute);
+      if (typeof hookResult === 'string') {
+        if (hookResult !== path) {
+          this.navigateTo(hookResult);
+        }
+        return;
+      }
+
+      if (hookResult === false) {
+        return;
+      }
+    }
+
+    this.currentRoute = path;
+    this.routes[routeKey](resolvedRoute);
   }
 
   pathToRegex(path) {
