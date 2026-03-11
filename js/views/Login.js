@@ -27,7 +27,7 @@ export function renderLogin() {
             <input id="password" type="password" required ${isSubmitting ? 'disabled' : ''} value="${formData.password}" />
           </div>
           ${errorMessage ? `<p class="error-message">${errorMessage}</p>` : ''}
-          <button type="submit" class="submit-btn" ${isSubmitting ? 'disabled' : ''}>
+          <button type="submit" class="login-submit-btn" ${isSubmitting ? 'disabled' : ''}>
             ${isSubmitting ? 'Logging in...' : 'Login'}
           </button>
         </form>
@@ -49,7 +49,10 @@ export function renderLogin() {
       event.preventDefault();
       errorMessage = '';
 
-      if (!formData.email || !formData.password) {
+      const email = formData.email.trim();
+      const password = formData.password;
+
+      if (!email || !password) {
         errorMessage = 'Please fill in all fields.';
         render();
         return;
@@ -60,14 +63,18 @@ export function renderLogin() {
 
       try {
         await authStore.loginWithEmail({
-          email: formData.email,
-          password: formData.password
+          email,
+          password
         });
         router.navigateTo('/');
       } catch (error) {
-        errorMessage = error?.code === 'auth/invalid-credential'
-          ? 'Invalid email or password.'
-          : 'Unable to log in. Please try again.';
+        if (error?.code === 'auth/invalid-credential') {
+          errorMessage = 'Invalid email or password.';
+        } else if (String(error?.code || '').startsWith('auth/requests-from-referer-')) {
+          errorMessage = 'Login is blocked for this URL.';
+        } else {
+          errorMessage = 'Unable to log in. Please try again.';
+        }
       } finally {
         isSubmitting = false;
         render();

@@ -1,4 +1,4 @@
-import { collection, doc, getDocs, query, serverTimestamp, updateDoc, where } from 'firebase/firestore';
+import { collection, doc, getDocs, query, serverTimestamp, updateDoc, where } from 'https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js';
 import { products, loadProductsFromDatabase } from '../data/products.js';
 import { db } from '../firebase.js';
 import { authStore } from '../stores/authStore.js';
@@ -238,7 +238,7 @@ export function renderOrderHistory() {
     main.innerHTML = `
       <h1 class="main-title-order-history">Order History</h1>
       <div class="order-detail-view">
-        <button type="button" class="back-btn">Back to Orders</button>
+        <button type="button" class="back-btn">← Back to Orders</button>
 
         <article class="order-card">
           <div class="order-header">
@@ -261,11 +261,11 @@ export function renderOrderHistory() {
           </div>
 
           <div class="order-customer">
-            <p><strong>Name:</strong> ${selectedOrder.customerName || '-'}</p>
-            <p><strong>Email:</strong> ${selectedOrder.email || '-'}</p>
-            <p><strong>Address:</strong> ${selectedOrder.address || '-'}</p>
-            <p><strong>Delivery:</strong> ${selectedOrder.deliveryLabel || selectedOrder.deliveryMethod || '-'}</p>
-            <p><strong>Payment:</strong> ${selectedOrder.paymentLabel || selectedOrder.paymentMethod || '-'}</p>
+            <p><strong>Name:</strong> ${selectedOrder.customerName || '—'}</p>
+            <p><strong>Email:</strong> ${selectedOrder.email || '—'}</p>
+            <p><strong>Address:</strong> ${selectedOrder.address || '—'}</p>
+            <p><strong>Delivery:</strong> ${selectedOrder.deliveryLabel || selectedOrder.deliveryMethod || '—'}</p>
+            <p><strong>Payment:</strong> ${selectedOrder.paymentLabel || selectedOrder.paymentMethod || '—'}</p>
             ${selectedOrder.pickupPoint ? `<p><strong>Pickup point:</strong> ${selectedOrder.pickupPoint}</p>` : ''}
           </div>
 

@@ -1,4 +1,4 @@
-import { addDoc, collection, doc, runTransaction, serverTimestamp } from 'firebase/firestore';
+import { addDoc, collection, doc, runTransaction, serverTimestamp } from 'https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js';
 import { cartStore } from '../stores/cartStore.js';
 import { router } from '../router.js';
 import { db } from '../firebase.js';

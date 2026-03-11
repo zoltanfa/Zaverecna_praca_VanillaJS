@@ -3,7 +3,7 @@ import { router } from '../router.js';
 
 export function renderRegister() {
   const main = document.createElement('main');
-  main.className = 'main-auth';
+  main.className = 'main-auth main-auth-register';
 
   let isSubmitting = false;
   let errorMessage = '';
@@ -44,7 +44,7 @@ export function renderRegister() {
             <input id="confirmPassword" type="password" required ${isSubmitting ? 'disabled' : ''} value="${formData.confirmPassword}" />
           </div>
           ${errorMessage ? `<p class="error-message">${errorMessage}</p>` : ''}
-          <button type="submit" class="submit-btn" ${isSubmitting ? 'disabled' : ''}>
+          <button type="submit" class="register-submit-btn" ${isSubmitting ? 'disabled' : ''}>
             ${isSubmitting ? 'Creating account...' : 'Create Account'}
           </button>
         </form>
@@ -94,9 +94,13 @@ export function renderRegister() {
         await authStore.registerWithEmail({ firstName, lastName, email, password });
         router.navigateTo('/login');
       } catch (error) {
-        errorMessage = error?.code === 'auth/email-already-in-use'
-          ? 'This email is already registered.'
-          : 'Unable to register. Please try again.';
+        if (error?.code === 'auth/email-already-in-use') {
+          errorMessage = 'This email is already registered.';
+        } else if (String(error?.code || '').startsWith('auth/requests-from-referer-')) {
+          errorMessage = 'Registration is blocked for this URL.';
+        } else {
+          errorMessage = 'Unable to register. Please try again.';
+        }
       } finally {
         isSubmitting = false;
         render();

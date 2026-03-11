@@ -113,7 +113,7 @@ export function createHeader() {
       logoutButton.addEventListener('click', async () => {
         try {
           await authStore.logout();
-          accountMenuOpen = false;
+          closeAccountMenu();
           router.navigateTo('/');
         } catch (error) {
           console.error('Logout failed:', error);

@@ -1,4 +1,4 @@
-﻿import { collection, getDocs, orderBy, query } from 'firebase/firestore';
+﻿import { collection, getDocs, orderBy, query } from 'https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js';
 import { db } from '../firebase.js';
 
 export const products = [];
@@ -59,6 +59,7 @@ export async function loadProductsFromDatabase(forceRefresh = false) {
       notifyProductsUpdated();
     } catch (error) {
       console.error('Failed to load products from Firestore:', error);
+      loadProductsPromise = null;
       if (products.length === 0) {
         replaceProducts([]);
         notifyProductsUpdated();

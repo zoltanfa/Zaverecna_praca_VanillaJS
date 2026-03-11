@@ -7,18 +7,14 @@ export function renderHome() {
   main.className = 'main-home';
   
   const render = () => {
-    const searchTerm = searchStore.getSearchTerm().toLowerCase();
-    let featuredProducts = products.filter(product => [1, 2, 6, 11, 16, 21].includes(product.id));
+    const searchTerm = searchStore.getSearchTerm();
+    let featuredProducts = products.filter(product => [1, 2, 6, 11, 16, 21, 27, 33].includes(product.id));
     
     if (searchTerm) {
-      featuredProducts = featuredProducts
-        .map((product) => ({
-          product,
-          score: searchStore.getSearchScore(product, searchTerm)
-        }))
-        .filter((entry) => entry.score > 0)
-        .sort((a, b) => b.score - a.score)
-        .map((entry) => entry.product);
+      featuredProducts = featuredProducts.filter((product) => searchStore.matchesFullTextSearch(product, searchTerm));
+      featuredProducts = [...featuredProducts].sort(
+        (a, b) => searchStore.getSearchScore(b, searchTerm) - searchStore.getSearchScore(a, searchTerm)
+      );
     }
     
     main.innerHTML = `

@@ -19,7 +19,7 @@ function isValidProfile(profile) {
 
 export function renderProfile() {
   const main = document.createElement('main');
-  main.className = 'main-auth';
+  main.className = 'main-auth main-auth-profile';
 
   let isSubmitting = false;
   let errorMessage = '';
@@ -69,11 +69,8 @@ export function renderProfile() {
 
   const render = () => {
     main.innerHTML = `
-      <h1 class="main-title-auth">Profile</h1>
+      <h1 class="main-title-auth">My Profile</h1>
       <section class="auth-card profile-card">
-        ${successMessage ? `<p class="success-message-inline">${successMessage}</p>` : ''}
-        ${errorMessage ? `<p class="error-message">${errorMessage}</p>` : ''}
-
         <form class="auth-form profile-form">
           <div class="form-row">
             <div class="form-group">
@@ -91,21 +88,20 @@ export function renderProfile() {
             <input id="email" type="email" required value="${formData.email}" ${isSubmitting ? 'disabled' : ''} />
           </div>
 
-          <div class="form-row">
-            <div class="form-group">
-              <label for="phone">Phone</label>
-              <input id="phone" type="text" required value="${formData.phone}" ${isSubmitting ? 'disabled' : ''} />
-            </div>
-            <div class="form-group">
-              <label for="city">City</label>
-              <input id="city" type="text" required value="${formData.city}" ${isSubmitting ? 'disabled' : ''} />
-            </div>
+          <div class="form-group">
+            <label for="phone">Phone Number</label>
+            <input id="phone" type="text" required value="${formData.phone}" ${isSubmitting ? 'disabled' : ''} />
+          </div>
+
+          <div class="form-group">
+            <label for="address">Street Address</label>
+            <input id="address" type="text" required value="${formData.address}" ${isSubmitting ? 'disabled' : ''} />
           </div>
 
           <div class="form-row">
             <div class="form-group">
-              <label for="address">Address</label>
-              <input id="address" type="text" required value="${formData.address}" ${isSubmitting ? 'disabled' : ''} />
+              <label for="city">City</label>
+              <input id="city" type="text" required value="${formData.city}" ${isSubmitting ? 'disabled' : ''} />
             </div>
             <div class="form-group">
               <label for="postalCode">Postal Code</label>
@@ -118,11 +114,12 @@ export function renderProfile() {
             <input id="country" type="text" required value="${formData.country}" ${isSubmitting ? 'disabled' : ''} />
           </div>
 
-          <button type="button" class="cancel-btn toggle-password-btn" ${isSubmitting ? 'disabled' : ''}>
+          <button type="button" class="toggle-password-btn" ${isSubmitting ? 'disabled' : ''}>
             ${showPasswordSection ? 'Cancel Password Change' : 'Change Password'}
           </button>
 
           ${showPasswordSection ? `
+            <h2 class="section-title">Change Password</h2>
             <div class="form-group">
               <label for="currentPassword">Current Password</label>
               <input id="currentPassword" type="password" ${isSubmitting ? 'disabled' : ''} value="${passwordData.currentPassword}" />
@@ -137,8 +134,11 @@ export function renderProfile() {
             </div>
           ` : ''}
 
-          <button type="submit" class="submit-btn" ${isSubmitting ? 'disabled' : ''}>
-            ${isSubmitting ? 'Saving...' : 'Save Profile'}
+          ${errorMessage ? `<p class="error-message">${errorMessage}</p>` : ''}
+          ${successMessage ? `<p class="profile-success-message">${successMessage}</p>` : ''}
+
+          <button type="submit" class="profile-submit-btn" ${isSubmitting ? 'disabled' : ''}>
+            ${isSubmitting ? 'Saving...' : 'Save Changes'}
           </button>
         </form>
       </section>
@@ -225,21 +225,35 @@ export function renderProfile() {
 
         if (normalizedProfile.email !== String(user.email || '').toLowerCase()) {
           await authStore.changeUserEmail(normalizedProfile.email);
-          successMessage = 'Profile saved. Confirm email change in your inbox.';
-        } else {
-          successMessage = 'Profile saved successfully.';
         }
+
+        successMessage = 'Profile updated successfully.';
 
         if (wantsPasswordChange) {
           await authStore.changeUserPassword({
             currentPassword: passwordData.currentPassword,
             newPassword: passwordData.newPassword
           });
-          successMessage += ' Password updated.';
+          successMessage = 'Profile updated successfully.';
+
+          passwordData.currentPassword = '';
+          passwordData.newPassword = '';
+          passwordData.confirmNewPassword = '';
         }
       } catch (error) {
-        console.error('Failed to save profile:', error);
-        errorMessage = error?.message || 'Unable to save profile.';
+        if (error?.code === 'auth/email-already-in-use') {
+          errorMessage = 'This email is already in use.';
+        } else if (error?.code === 'auth/requires-recent-login') {
+          errorMessage = 'Please log in again before changing sensitive account details.';
+        } else if (error?.code === 'auth/invalid-email') {
+          errorMessage = 'Please enter a valid email address.';
+        } else if (error?.code === 'auth/too-many-requests') {
+          errorMessage = 'Too many attempts. Please wait and try again.';
+        } else if (error?.code === 'auth/wrong-password' || error?.code === 'auth/invalid-credential') {
+          errorMessage = 'Current password is incorrect.';
+        } else {
+          errorMessage = 'Unable to update profile. Please try again.';
+        }
       } finally {
         isSubmitting = false;
         render();

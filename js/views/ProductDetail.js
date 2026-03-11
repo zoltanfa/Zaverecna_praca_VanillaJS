@@ -22,8 +22,9 @@ export function renderProductDetail(route) {
       <div class="product-detail-info">
         <h1 class="product-detail-title">${product.name}</h1>
         <p class="product-detail-price">${product.price.toFixed(2)} €</p>
+        <p class="stock-status ${isAvailable ? '' : 'out-of-stock'}">${isAvailable ? 'In stock' : 'Out of stock'}</p>
         <p class="product-detail-description">${product.description}</p>
-        <button class="add-to-cart-btn-detail" ${isAvailable ? '' : 'disabled'}>${isAvailable ? 'Add to Cart' : 'Out of Stock'}</button>
+        <button class="add-to-cart-btn-detail" ${isAvailable ? '' : 'disabled'}>${isAvailable ? '🛒 Add to Cart' : 'Unavailable'}</button>
         <button class="category-btn">Show ${product.category} Products</button>
       </div>
     </div>

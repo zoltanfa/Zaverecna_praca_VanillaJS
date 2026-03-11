@@ -9,7 +9,7 @@ import {
   reauthenticateWithCredential,
   EmailAuthProvider
 } from 'https://www.gstatic.com/firebasejs/12.10.0/firebase-auth.js';
-import { doc, getDoc, setDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, getDoc, setDoc, updateDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js';
 import { auth, db } from '../firebase.js';
 
 class AuthStore {
@@ -119,7 +119,8 @@ class AuthStore {
   }
 
   async registerWithEmail({ firstName, lastName, email, password }) {
-    const { user } = await createUserWithEmailAndPassword(auth, email, password);
+    const normalizedEmail = this.normalizeEmail(email);
+    const { user } = await createUserWithEmailAndPassword(auth, normalizedEmail, password);
     const fullName = `${firstName} ${lastName}`.trim();
 
     if (fullName) {
@@ -129,7 +130,7 @@ class AuthStore {
     await setDoc(doc(db, 'profiles', user.uid), {
       firstName,
       lastName,
-      email,
+      email: normalizedEmail,
       role: 'customer',
       phone: '',
       address: '',
@@ -144,7 +145,8 @@ class AuthStore {
   }
 
   async loginWithEmail({ email, password }) {
-    const { user } = await signInWithEmailAndPassword(auth, email, password);
+    const normalizedEmail = this.normalizeEmail(email);
+    const { user } = await signInWithEmailAndPassword(auth, normalizedEmail, password);
     return user;
   }
 
