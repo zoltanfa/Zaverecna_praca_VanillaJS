@@ -344,6 +344,10 @@ nav {
   margin-top: 20px;
 }
 
+.js-conditional-filters .filters-title:first-child {
+  margin-top: 20px;
+}
+
 .filter-options {
   display: flex;
   flex-direction: column;
@@ -1306,7 +1310,7 @@ nav {
 .main-title-auth {
   font-size: 30px;
   font-weight: 700;
-  margin: 0 0 16px;
+  margin: 20px 0 24px;
 }
 
 .main-title-admin {
@@ -1789,7 +1793,6 @@ nav {
 
   .filters {
     width: 100%;
-    order: 1;
   }
 
   .products-section {

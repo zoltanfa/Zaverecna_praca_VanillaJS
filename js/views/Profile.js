@@ -1,4 +1,5 @@
 import { authStore } from '../stores/authStore.js';
+import { updateProfile } from 'https://www.gstatic.com/firebasejs/12.10.0/firebase-auth.js';
 
 function normalizeProfileData(rawData) {
   return {
@@ -220,6 +221,10 @@ export function renderProfile() {
         if (!user) {
           throw new Error('User not authenticated.');
         }
+
+        await updateProfile(user, {
+          displayName: `${normalizedProfile.firstName} ${normalizedProfile.lastName}`.trim()
+        });
 
         await authStore.saveUserProfile(user.uid, normalizedProfile);
 

@@ -65,6 +65,8 @@ export function renderAdmin() {
   let showCategoryManagement = false;
   let showProductManagement = false;
   let showUserManagement = false;
+  let hasLoadedUserManagementData = false;
+  let isLoadingUserManagementData = false;
 
   const productForm = {
     id: null,
@@ -164,11 +166,22 @@ export function renderAdmin() {
       .sort((a, b) => String(a.email || '').localeCompare(String(b.email || '')));
   };
 
-  const refreshAdminData = async () => {
+  const refreshCatalogData = async () => {
     await loadProductsFromDatabase(true);
     await loadCategories();
-    await loadOrders();
-    await loadUsers();
+  };
+
+  const loadUserManagementData = async (forceRefresh = false) => {
+    if (hasLoadedUserManagementData && !forceRefresh) {
+      return;
+    }
+
+    await Promise.all([
+      loadOrders(),
+      loadUsers()
+    ]);
+
+    hasLoadedUserManagementData = true;
   };
 
   const ensureCategoryExists = async (name) => {
@@ -181,16 +194,9 @@ export function renderAdmin() {
     }, { merge: true });
   };
 
-  const getUserOrderCount = (uid) => orders.filter((o) => o.userId === uid).length;
-
   const getOrderItemsCount = (order) => {
     if (!order?.items?.length) return 0;
     return order.items.reduce((count, item) => count + (Number(item.quantity) || 0), 0);
-  };
-
-  const getOrderItemImage = (item) => {
-    const product = products.find((p) => p.id === item.id);
-    return product?.image || '';
   };
 
   const bindSectionToggleEvents = () => {
@@ -204,8 +210,23 @@ export function renderAdmin() {
       render();
     });
 
-    main.querySelector('.toggle-user-btn')?.addEventListener('click', () => {
+    main.querySelector('.toggle-user-btn')?.addEventListener('click', async () => {
       showUserManagement = !showUserManagement;
+
+      if (showUserManagement) {
+        isLoadingUserManagementData = true;
+        render();
+
+        try {
+          await loadUserManagementData();
+        } catch (error) {
+          console.error('Failed to load user management data:', error);
+          adminError = 'Unable to load users and orders.';
+        } finally {
+          isLoadingUserManagementData = false;
+        }
+      }
+
       render();
     });
   };
@@ -305,7 +326,7 @@ export function renderAdmin() {
         }
         editingCategoryId = '';
         editingCategoryName = '';
-        await refreshAdminData();
+        await refreshCatalogData();
         adminSuccess = 'Category updated.';
       } catch (error) {
         console.error('Failed to update category:', error);
@@ -393,7 +414,7 @@ export function renderAdmin() {
         try {
           const productId = btn.getAttribute('data-id');
           await deleteDoc(doc(db, 'products', String(productId)));
-          await refreshAdminData();
+          await refreshCatalogData();
           adminSuccess = 'Product deleted.';
         } catch (error) {
           console.error('Failed to delete product:', error);
@@ -468,7 +489,7 @@ export function renderAdmin() {
           createdAt: serverTimestamp()
         }, { merge: true });
         await ensureCategoryExists(category);
-        await refreshAdminData();
+        await refreshCatalogData();
         resetProductForm();
         adminSuccess = 'Product saved.';
       } catch (error) {
@@ -498,7 +519,7 @@ export function renderAdmin() {
             await authStore.refreshCurrentUserRole();
           }
           adminSuccess = 'User role updated.';
-          await loadUsers();
+          await loadUserManagementData(true);
         } catch (error) {
           console.error('Failed to update role:', error);
           adminError = 'Unable to update user role.';
@@ -546,7 +567,18 @@ export function renderAdmin() {
             }
           }
           if (nextStatus === 'Cancelled' && currentStatus !== 'Cancelled') {
-            await cancelOrderWithRestock({ orderId, cancellableStatuses: ['Created', 'Processed'] });
+            try {
+              await cancelOrderWithRestock({ orderId, cancellableStatuses: ['Created', 'Processed'] });
+            } catch (restockError) {
+              const code = String(restockError?.code || '').toLowerCase();
+              const msg = String(restockError?.message || '').toLowerCase();
+              const isPermission = code.includes('permission-denied') || msg.includes('permission') || msg.includes('insufficient');
+              if (!isPermission) throw restockError;
+              await updateDoc(doc(db, 'orders', orderId), {
+                status: 'Cancelled',
+                updatedAt: serverTimestamp()
+              });
+            }
             await loadProductsFromDatabase(true);
           } else {
             await updateDoc(doc(db, 'orders', orderId), {
@@ -581,6 +613,19 @@ export function renderAdmin() {
     const selectedUserOrders = selectedUserOrdersUid
       ? orders.filter((o) => o.userId === selectedUserOrdersUid)
       : [];
+    const orderCountByUser = new Map();
+    for (const order of orders) {
+      const uid = String(order?.userId || '');
+      if (!uid) {
+        continue;
+      }
+
+      orderCountByUser.set(uid, (orderCountByUser.get(uid) || 0) + 1);
+    }
+
+    const productImageById = new Map(
+      products.map((product) => [String(product.id), product.image || ''])
+    );
 
     main.innerHTML = `
       <h1 class="main-title-admin">Admin Panel</h1>
@@ -680,12 +725,13 @@ export function renderAdmin() {
       ${showUserManagement ? `
       <section class="panel">
         <h2>Users</h2>
+        ${isLoadingUserManagementData ? '<p class="empty-note">Loading users and orders...</p>' : ''}
         <div class="list">
           ${users.map((user) => `
             <div class="list-item">
               <div>
                 <strong>${escapeHtml(((user.firstName || '') + ' ' + (user.lastName || '')).trim() || user.uid)}</strong>
-                <small class="meta">${escapeHtml(user.email || user.uid)} | orders: ${getUserOrderCount(user.uid)}</small>
+                <small class="meta">${escapeHtml(user.email || user.uid)} | orders: ${orderCountByUser.get(String(user.uid)) || 0}</small>
               </div>
               <div class="actions wrap-actions">
                 <select class="input compact role-select" data-uid="${escapeHtml(user.uid)}" ${isSavingUser ? 'disabled' : ''}>
@@ -734,7 +780,7 @@ export function renderAdmin() {
                       ${(order.items || []).map((item) => `
                         <div class="adm-order-item-row">
                           <div class="adm-order-item-main">
-                            ${getOrderItemImage(item) ? `<img src="${escapeHtml(getOrderItemImage(item))}" alt="${escapeHtml(item.name)}" class="order-item-image" />` : ''}
+                            ${productImageById.get(String(item.id)) ? `<img src="${escapeHtml(productImageById.get(String(item.id)))}" alt="${escapeHtml(item.name)}" class="order-item-image" />` : ''}
                             <div>
                               <strong>${escapeHtml(item.name)}</strong>
                               <small class="meta">Qty: ${Number(item.quantity) || 0}</small>
@@ -771,7 +817,7 @@ export function renderAdmin() {
     }
   };
 
-  refreshAdminData()
+  refreshCatalogData()
     .then(() => {
       isLoading = false;
       resetProductForm();

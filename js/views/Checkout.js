@@ -456,28 +456,6 @@ export function renderCheckout() {
             </div>
           </section>
 
-          <section class="form-section">
-            <h2>Order Summary</h2>
-            <div class="order-summary">
-              ${cartItems.length === 0 ? `
-                <div class="empty-cart-message">
-                  <p>Your cart is empty. <a href="#/products" data-link>Continue shopping</a></p>
-                </div>
-              ` : `
-                ${cartItems.map((item) => `
-                  <div class="summary-item">
-                    <span>${item.name} x ${item.quantity}</span>
-                    <span>${(item.price * item.quantity).toFixed(2)} €</span>
-                  </div>
-                `).join('')}
-                <div class="summary-total">
-                  <strong>Total:</strong>
-                  <strong>${cartStore.totalPrice.toFixed(2)} €</strong>
-                </div>
-              `}
-            </div>
-          </section>
-
           <div class="form-actions">
             <button type="button" class="cancel-btn go-cart-btn" ${isProcessing ? 'disabled' : ''}>Back to Cart</button>
             <button type="button" class="submit-btn next-step-btn" ${cartItems.length === 0 ? 'disabled' : ''}>Continue to Delivery</button>
